@@ -6,21 +6,35 @@ def file_reader(path_to_file, year):
     """
     Parse path to the file and then read it, making a dict.
     """
+    ukrlang = "абвгґдеєжзиіїйклмнопрстуфхцчшщбюя"
     films_info_dct = {}
-    temporarylst = []
+    film_linelst = []
     with open (path_to_file, 'r',  encoding="utf8", errors='ignore') as file:
         for line in file:
             if year in line:
-                if "{" in line:
-                    line = line[:line.index("{")] + line[line.index("}"):]
+                if "{" or "(" in line:
+                    line = line[:line.index("{")] + line[line.index("}") + 1:]
+                    while "(" in line:
+                        line = line[:line.index("(")] + line[line.index(")") + 1:]
                 line = line.replace("#", "")
-                if 
-                line = line.split('\t')
+                line = line.replace("\n", "")
+                if line[0] in ukrlang:
+                    line = line[1:]
+                linelst = line.split('\t')
+                for element in linelst:
+                    if element == '' or element == "" :
+                        linelst.remove(element)
+                if linelst[0] in films_info_dct.keys():
+                    films_info_dct[linelst[0]].append(linelst[-1])
+                else:
+                    films_info_dct[linelst[0]] = [linelst[-1]]
+
+
 def making_map(latitude, longtitude):
     map = folium.Map(tiles="Stamen Terrain",location=[latitude, longtitude])
     map.save('Map_1.html')
 
-def film_coordinates(filmnameslst):
+def film_coordinates(film_linelst):
     """
     Parse the coordinates to the film's palces 
     """
