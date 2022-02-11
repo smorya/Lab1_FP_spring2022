@@ -1,0 +1,6 @@
+To use the program you should import these moduls:
+import folium
+from geopy.geocoders import Nominatim
+from geopy.extra.rate_limiter import RateLimiter
+from haversine import haversine
+import argparse
