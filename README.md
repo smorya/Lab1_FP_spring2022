@@ -6,5 +6,5 @@ This information can be used for building maps and analyzing data to make some s
 some nations or amount of films that were made in specific year.
 
 These are some examples of running the module:
->>> python3 main.py 2015 49.83826 24.02324 Laboratory1/locationslst.txt
+>>> python3 main.py 2015 49.83826 24.02324 locationslist.txt
 ![Знімок екрана 2022-02-11 о 21 06 32](https://user-images.githubusercontent.com/92580908/153655236-f03e35a9-6be2-4afe-bd23-d5853e49db5c.png)
