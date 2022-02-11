@@ -1,22 +1,14 @@
+"""Module that analyzes the database of films"""
 # encoding:utf-8
-from curses import keyname
 import folium
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 from haversine import haversine
 import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('year', help = 'year of a film')
-parser.add_argument('latitude', help = 'latitude of users loc')
-parser.add_argument('longitude', help = 'longitude of users loc')
-parser.add_argument('path_to_dataset', help = 'path to dataset')
-args = parser.parse_args()
-def file_reader():
+def file_reader(year, path_to_file):
     """
     Parse path to the file and then read it, making a dict.
     """
-    path_to_file = args.path_to_dataset
-    year = args.year
     ukrlang = "абвгґдеєжзиіїйклмнопрстуфхцчшщбюя"
     films_info_dct = {}
     film_linelst = []
@@ -44,7 +36,9 @@ def file_reader():
 
 def film_coordinates(films_info_dct):
     """
-    Parse the coordinates to the film's places 
+    Parse the coordinates to the film's places and make tuple of it.
+    >>> film_coordinates({'"15SecondScare"  ': ['Coventry, West Midlands, England, UK']})
+    {'"15SecondScare"  ': [(52.4081812, -1.510477)]}
     """
     films_locs_dct = {}
     geolocator = Nominatim(user_agent="main.py")
@@ -69,11 +63,13 @@ def film_coordinates(films_info_dct):
                 else:
                     films_locs_dct[tple[0]] = [(location.latitude, location.longitude)]
     return films_locs_dct
-def distance(films_locs_dct):
+
+def distance(latitude1, longitude2, films_locs_dct):
     """
     Calculates the distance between two locs.
+    >>> distance(49.83826, 24.02324, {'"15SecondScare"  ': [(52.4081812, -1.510477)]})
+    [('"15SecondScare"  ', 1795.09010826153, (52.4081812, -1.510477))]
     """
-    latitude1, longitude2 = args.latitude, args.longitude
     usersloc = (float(latitude1), float(longitude2))
     lstofdistance = []
     for item in films_locs_dct.items():
@@ -83,9 +79,12 @@ def distance(films_locs_dct):
     lstofdistance = sorted(lstofdistance, key = lambda x: x[1])
     lstofdistance = lstofdistance[:10]
     return lstofdistance
-def making_map(lstofdistance):
-    latitude1, longitude2 = args.latitude, args.longitude
-    map = folium.Map(tiles="Stamen Terrain",location = [latitude1, longitude2], control_scale=True)
+
+def making_map(latitude1, longitude2,lstofdistance):
+    """
+    Makes a map out od data, stated in previous functions.
+    """
+    map = folium.Map(zoom_start=4, tiles="Stamen Terrain",location = [latitude1, longitude2], control_scale=True)
     film_markers = folium.FeatureGroup(name = "Films")
     users_location = folium.FeatureGroup(name = "your location")
     map.add_child(users_location)
@@ -94,10 +93,25 @@ def making_map(lstofdistance):
     for element in lstofdistance:
         film_markers.add_child(folium.Marker(location = element[2], popup = element[0]))
     map.add_child(folium.LayerControl())
-    map.save('Map_1.html')
+    map.save('Map_films.html')
 
-    
-print(file_reader())
-print(film_coordinates(file_reader()))
-print(distance(film_coordinates(file_reader())))
-print(making_map(distance(film_coordinates(file_reader()))))
+def main():
+    """
+    Brings up all functions together to make the module work.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('year', help = 'year of a film', type = str)
+    parser.add_argument('latitude', help = 'latitude of users loc')
+    parser.add_argument('longitude', help = 'longitude of users loc')
+    parser.add_argument('path_to_dataset', help = 'path to dataset', type = str)
+    args = parser.parse_args()
+    latitude1 = args.latitude
+    longitude1 = args.longitude
+    path_to_file = args.path_to_dataset
+    year = args.year
+    films_info_dct = file_reader(args.year, args.path_to_dataset)
+    films_locs_dct = film_coordinates(films_info_dct)
+    making_map(latitude1, longitude1, distance(latitude1, longitude1, films_locs_dct))
+
+if __name__ == "__main__":
+    main()
